@@ -1,8 +1,8 @@
 // ignore_for_file: avoid_print
 
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/services.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:todo_list_provider/app/exceptions/auth_exception.dart';
 
 import './user_repository.dart';
@@ -79,5 +79,50 @@ class UserRepositoryImpl implements UserRepository {
       print(s);
       throw AuthException(messsage: 'Erro ao trocar senha');
     }
+  }
+
+  @override
+  Future<User?> googleLogin() async {
+    List<String>? loginMethods;
+    try {
+      final googleSignIn = GoogleSignIn();
+      final googleUser = await googleSignIn.signIn();
+      if (googleUser != null) {
+        loginMethods =
+            await _firebaseAuth.fetchSignInMethodsForEmail(googleUser.email);
+
+        if (loginMethods.contains('password')) {
+          throw AuthException(
+              messsage:
+                  'Você utilizou o e-mail para cadastro no TodoList, caso tenha esquecido sua senha, clique em Esqueci minha senha.');
+        } else {
+          final googleAuth = await googleUser.authentication;
+          final firebaseCredencial = GoogleAuthProvider.credential(
+            accessToken: googleAuth.accessToken,
+            idToken: googleAuth.idToken,
+          );
+          var userCredencial =
+              await _firebaseAuth.signInWithCredential(firebaseCredencial);
+          return userCredencial.user;
+        }
+      }
+    } on FirebaseAuthException catch (e, s) {
+      print(e);
+      print(s);
+      if (e.code == 'accounts-exists-with-different-credential') {
+        throw AuthException(messsage: '''
+          Login inválido. Você se registrou no TodoList com os seguintes provedores:
+          ${loginMethods?.join(',')}
+        ''');
+      } else {
+        throw AuthException(messsage: 'Erro ao realizar login.');
+      }
+    }
+  }
+  
+  @override
+  Future<void> googleLogout() async {
+    await GoogleSignIn().signOut();
+    _firebaseAuth.signOut();
   }
 }
