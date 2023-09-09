@@ -12,21 +12,23 @@ class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
   void _goToCreateTask(BuildContext context) {
-    Navigator.of(context).push(PageRouteBuilder(
-      transitionDuration: const Duration(milliseconds: 400),
-      transitionsBuilder: (context, animation, secondaryAnimation, child) {
-        animation =
-            CurvedAnimation(parent: animation, curve: Curves.easeInQuad);
-        return ScaleTransition(
-          scale: animation,
-          alignment: Alignment.bottomRight,
-          child: child,
-        );
-      },
-      pageBuilder: (context, animation, secondaryAnimation) {
-        return TasksModule().getPage('/task/create', context);
-      },
-    ));
+    Navigator.of(context).push(
+      PageRouteBuilder(
+        transitionDuration: const Duration(milliseconds: 400),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          animation =
+              CurvedAnimation(parent: animation, curve: Curves.easeInQuad);
+          return ScaleTransition(
+            scale: animation,
+            alignment: Alignment.bottomRight,
+            child: child,
+          );
+        },
+        pageBuilder: (context, animation, secondaryAnimation) {
+          return TasksModule().getPage('/task/create', context);
+        },
+      ),
+    );
   }
 
   @override

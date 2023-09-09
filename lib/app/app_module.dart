@@ -4,8 +4,13 @@ import 'package:provider/provider.dart';
 import 'package:todo_list_provider/app/app_widget.dart';
 import 'package:todo_list_provider/app/core/auth/auth_provider.dart';
 import 'package:todo_list_provider/app/core/database/sqlite_migration_factory.dart';
+import 'package:todo_list_provider/app/modules/tasks/task_create_page.dart';
+import 'package:todo_list_provider/app/repositories/tasks/tasks_repository.dart';
+import 'package:todo_list_provider/app/repositories/tasks/tasks_repository_impl.dart';
 import 'package:todo_list_provider/app/repositories/user/user_repository.dart';
 import 'package:todo_list_provider/app/repositories/user/user_repository_impl.dart';
+import 'package:todo_list_provider/app/services/tasks/tasks_service.dart';
+import 'package:todo_list_provider/app/services/tasks/tasks_service_impl.dart';
 import 'package:todo_list_provider/app/services/user/user_service.dart';
 import 'package:todo_list_provider/app/services/user/user_service_impl.dart';
 
@@ -21,6 +26,14 @@ class AppModule extends StatelessWidget {
           create: (_) => SqliteMigrationFactory(),
           lazy: false,
         ),
+        Provider<TasksRepository>(
+          create: (context) =>
+              TasksRepositoryImpl(sqliteConnectionFactory: context.read()),
+        ),
+        Provider<TasksService>(
+          create: (context) =>
+              TasksServiceImpl(tasksRepository: context.read()),
+        ),
         Provider<UserRepository>(
           create: (context) => UserRepositoryImpl(firebaseAuth: context.read()),
         ),
@@ -31,8 +44,8 @@ class AppModule extends StatelessWidget {
           create: (context) => AuthProvider(
               firebaseAuth: context.read(), userService: context.read())
             ..loadListener(),
-            lazy: false,
-        )
+          lazy: false,
+        ),
       ],
       child: const AppWidget(),
     );

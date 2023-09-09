@@ -8,7 +8,7 @@ class TasksModule extends TodoListModule {
       : super(
           bindings: [
             ChangeNotifierProvider(
-              create: (conterxt) => TaskCreateController(),
+              create: (context) => TaskCreateController(tasksService: context.read()),
             )
           ],
           routers: {
